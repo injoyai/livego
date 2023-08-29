@@ -19,9 +19,15 @@ var RoomKeys = &RoomKeysType{
 	localCache: cache.New(cache.NoExpiration, 0),
 }
 
-var saveInLocal = true
+var (
+	saveInLocal = true
+	keyDefault  = "default"
+)
 
 func Init() {
+
+	RoomKeys.SetKey(keyDefault)
+
 	saveInLocal = len(Config.GetString("redis_addr")) == 0
 	if saveInLocal {
 		return
@@ -58,6 +64,12 @@ func (r *RoomKeysType) SetKey(channel string) (key string, err error) {
 				return
 			}
 		}
+	}
+
+	if channel == keyDefault {
+		key = keyDefault
+		r.localCache.SetDefault(keyDefault, keyDefault)
+		return
 	}
 
 	for {

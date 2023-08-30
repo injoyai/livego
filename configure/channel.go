@@ -21,12 +21,9 @@ var RoomKeys = &RoomKeysType{
 
 var (
 	saveInLocal = true
-	keyDefault  = "default"
 )
 
 func Init() {
-
-	RoomKeys.SetKey(keyDefault)
 
 	saveInLocal = len(Config.GetString("redis_addr")) == 0
 	if saveInLocal {
@@ -66,12 +63,6 @@ func (r *RoomKeysType) SetKey(channel string) (key string, err error) {
 		}
 	}
 
-	if channel == keyDefault {
-		key = keyDefault
-		r.localCache.SetDefault(keyDefault, keyDefault)
-		return
-	}
-
 	for {
 		key = uid.RandStringRunes(48)
 		if _, found := r.localCache.Get(key); !found {
@@ -84,6 +75,8 @@ func (r *RoomKeysType) SetKey(channel string) (key string, err error) {
 }
 
 func (r *RoomKeysType) GetKey(channel string) (newKey string, err error) {
+	return channel, nil
+
 	if !saveInLocal {
 		if newKey, err = r.redisCli.Get(channel).Result(); err == redis.Nil {
 			newKey, err = r.SetKey(channel)
@@ -105,6 +98,8 @@ func (r *RoomKeysType) GetKey(channel string) (newKey string, err error) {
 }
 
 func (r *RoomKeysType) GetChannel(key string) (channel string, err error) {
+	return key, nil
+
 	if !saveInLocal {
 		return r.redisCli.Get(key).Result()
 	}
